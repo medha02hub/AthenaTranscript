@@ -1,29 +1,21 @@
-const express = require('express');
-const Transcription = require('../models/Transcription'); // Your transcription model
+const express = require("express");
 const router = express.Router();
+const translateText = require("../helpers/translationHelper");
 
-// Example route to get all transcriptions
-router.get('/', async (req, res) => {
+// POST: Translate real-time text
+router.post("/translate", async (req, res) => {
+  const { text, targetLanguage } = req.body;
+
+  if (!text || !targetLanguage) {
+    return res.status(400).json({ error: "Text and target language are required." });
+  }
+
   try {
-    const transcriptions = await Transcription.find();
-    res.status(200).json(transcriptions);
+    const translatedText = await translateText(text, targetLanguage);
+    res.json({ translatedText });
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching transcriptions', error });
+    res.status(500).json({ error: "Translation failed." });
   }
 });
-
-// Example route to create a new transcription
-router.post('/', async (req, res) => {
-  const { text, videoId } = req.body;
-  const transcription = new Transcription({ text, videoId });
-  try {
-    await transcription.save();
-    res.status(200).json({ message: 'Transcription saved', transcription });
-  } catch (error) {
-    res.status(500).json({ message: 'Error saving transcription', error });
-  }
-});
-
-// You can also define other routes for editing, deleting transcriptions, etc.
 
 module.exports = router;
